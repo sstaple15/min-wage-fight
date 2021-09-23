@@ -5,7 +5,7 @@
 # Updated: 2021-09-22
 ###########################################################################
 
-# limit_pums.R ->
+# collect_pums.R ->
 
 # Steps of this script:
 # (1) Collect population we will be raking to from ACS
@@ -21,15 +21,13 @@
 list.packages <- c('tidyverse', 'tidycensus', 'magrittr', 'here', 'survey', 'srvyr', 'pewmethods')
 new.packages  <- list.packages[!( list.packages %in% installed.packages()[, 'Package'] )]
 
-if(length(new.packages)) install.packages(new.packages); rm(list.packages, new.packages)
+# install if not currently
+if(length(new.packages)) { install.packages(new.packages);
+  if(grepl('pewmethods', new.packages)) { # exception for git-only packages
+    if(!( 'devtools' %in% installed.packages()[, 'Package'] )) { install.packages('devtools') }
+    require(devtools); install_github("pewresearch/pewmethods") } }; rm(new.packages) 
 
-require(tidyverse)
-require(tidycensus)
-require(magrittr)
-require(here)
-require(survey)
-require(srvyr)
-require(rake_survey)
+lapply(list.packages, require, character.only = T); rm(list.packages) # load into environment
 
 #--------------------------------------------------------------------------
 # Collect population we will be raking to from ACS
@@ -45,21 +43,21 @@ require(rake_survey)
 # - hispanic x ( 16-64 | 65+ )
 # - education level for 16+
 # - part-time status
+# - 
 
 # take a look at the acs variables available
 acs.dict <- load_variables( 2019, 'acs5' )
 
 acs.2019 <- get_acs(
-  variablaes = c('B01001_026',  # total female
-                 'C18121_002',  # worked full-time year-round
-                 'B06001_004',  # age 18-24
-                 'B06001_005',  # age 25-34
-                 'B06001_006',  # age 35-44
-                 'B06001_007',  # age 45-54
-                 'B06001_008',  # age 55-59
-                 'B01001A_007', # age 18-19 male white
+  variables = c('B01001_026',  # total female
+                'C18121_002',  # worked full-time year-round
+                'B06001_004',  # age 18-24
+                'B06001_005',  # age 25-34
+                'B06001_006',  # age 35-44
+                'B06001_007',  # age 45-54
+                'B06001_008',  # age 55-59
+                'B01001A_007'  # age 18-19 male white
                  )
-  )
 )
 
 #standardize rake variable names and save
